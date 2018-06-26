@@ -1,0 +1,75 @@
+import glob
+from sys import argv as argument
+import sys
+from rdkit import Chem
+from rdkit.Chem import AllChem
+from rdkit import DataStructs
+from rdkit.Chem.Fingerprints import FingerprintMols
+from rdkit import rdBase
+
+
+def validRxn(reactant, reaction):
+    try:
+        product = None
+        product = reaction.RunReactants(reactant)
+        if(len(product) == 0):
+            print('Product length is 0: ' + Chem.MolToSmiles(reactant[0]) + ' ' + reactionPlan)
+            return False
+
+        #Check that forward and reversal are same
+        compound = Chem.MolToSmiles(reactant[0])
+        reverseReactionPlan = reactionPlan[reactionPlan.find('>>')+2:] + '>>' + reactionPlan[0:reactionPlan.find('>>')]
+        reverseReaction = AllChem.ReactionFromSmarts(reverseReactionPlan)
+
+        for prod in product:
+            try:
+                reactant = reverseReaction.RunReactants(prod)
+                for pairs in reactant:
+                    for molecule in pairs:
+                        moleculeBit = FingerprintMols.FingerprintMol(molecule)
+                        compoundBit= FingerprintMols.FingerprintMol(mol)
+                        similarity = DataStructs.FingerprintSimilarity(moleculeBit, compoundBit)
+                        #print(similarity)
+                        if (similarity == 1): # Rxn is valid b/c product and reverse product is found to be same
+                            return True
+
+            except:
+                pass
+
+        print("Failure to return same molecule: " + Chem.MolToSmiles(reactant[0]) + " " + reactionPlan)
+        return False
+    except:
+        print('Overall error')
+        return False
+
+
+
+if(len(argument) != 2):
+    print("Error in argument length; SMILES and output file needed...")
+else:
+    if(argument[1].endswith('.sdf')):
+        suppl = Chem.SDMolSupplier(argument[1])
+        molList = [x for x in suppl if x is not None]
+    elif(argument[1].endswith('.smi')):
+        molList = []
+        with open(argument[1],'r') as File:
+            for line in File:
+                molList.append(Chem.MolFromSmiles(line))
+    elif(argument[1].endswith('.pdb')):
+        molList = []
+        molList.append(Chem.MolFromPDBFile(argument[1]))
+    else:
+        print('Need .sdf or .smi or .pdb file to read')
+        sys.exit()
+    for filename in glob.glob('CleanChemRxns/*'):
+        if filename.endswith(".smarts"):
+            writer = Chem.SmilesWriter(filename + 'compounds.smi')
+            with open(filename, 'r') as rxnfile:
+                reactionPlan = rxnfile.read()
+                reaction = AllChem.ReactionFromSmarts(reactionPlan)
+                for mol in molList:
+                    reactant = []
+                    reactant.append(mol)
+                    validity = validRxn(reactant, reaction)
+                    if validity:
+                        writer.write(mol)
