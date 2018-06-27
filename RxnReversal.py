@@ -79,8 +79,8 @@ else:
                 validity = validRxn(reactant, reaction)
                 if validity:
                     print(line[0] + " is valid for " + Chem.MolToSmiles(mol))
-                    numValid++
+                    numValid += 1
                 else:
-                    numInvalid++
-print("Valid Rxns: " + numValid)
-print("Invalid Rxns: " + numInvalid)
+                    numInvalid += 1
+print("Valid Rxns: " + str(numValid))
+print("Invalid Rxns: " + str(numInvalid))
