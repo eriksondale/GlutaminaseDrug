@@ -68,6 +68,8 @@ else:
         print('Need .sdf or .smi or .pdb file to read')
         sys.exit()
     with open(argument[2],"r") as RxnFile:
+        numInvalid = 0
+        numValid = 0
         for line in RxnFile:
             line = line.split("\t")
             reaction = AllChem.ReactionFromSmarts(line[1])
@@ -77,3 +79,8 @@ else:
                 validity = validRxn(reactant, reaction)
                 if validity:
                     print(line[0] + " is valid for " + Chem.MolToSmiles(mol))
+                    numValid++
+                else:
+                    numInvalid++
+print("Valid Rxns: " + numValid)
+print("Invalid Rxns: " + numInvalid)
