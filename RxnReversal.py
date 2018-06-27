@@ -1,3 +1,9 @@
+# Written by Dale Erikson
+
+# The purpose of this script is to determine what molecules a library are
+# able to be formed via a given rxn
+
+# note: Rxns are expected to be given in the reverse direction
 import glob
 from sys import argv as argument
 import sys
@@ -13,7 +19,7 @@ def validRxn(reactant, reaction):
         product = None
         product = reaction.RunReactants(reactant)
         if(len(product) == 0):
-            print('Product length is 0: ' + Chem.MolToSmiles(reactant[0]) + ' ' + reactionPlan)
+            #print('Product length is 0: ' + Chem.MolToSmiles(reactant[0]) + ' ' + reactionPlan)
             return False
 
         #Check that forward and reversal are same
@@ -36,16 +42,16 @@ def validRxn(reactant, reaction):
             except:
                 pass
 
-        print("Failure to return same molecule: " + Chem.MolToSmiles(reactant[0]) + " " + reactionPlan)
+        #print("Failure to return same molecule: " + Chem.MolToSmiles(reactant[0]) + " " + reactionPlan)
         return False
     except:
-        print('Overall error')
+        #print('Overall error')
         return False
 
 
 
-if(len(argument) != 2):
-    print("Error in argument length; SMILES and output file needed...")
+if(len(argument) != 3):
+    print("Error in argument length; molecule and rxn files needed....")
 else:
     if(argument[1].endswith('.sdf')):
         suppl = Chem.SDMolSupplier(argument[1])
@@ -61,15 +67,13 @@ else:
     else:
         print('Need .sdf or .smi or .pdb file to read')
         sys.exit()
-    for filename in glob.glob('CleanChemRxns/*'):
-        if filename.endswith(".smarts"):
-            writer = Chem.SmilesWriter(filename + 'compounds.smi')
-            with open(filename, 'r') as rxnfile:
-                reactionPlan = rxnfile.read()
-                reaction = AllChem.ReactionFromSmarts(reactionPlan)
-                for mol in molList:
-                    reactant = []
-                    reactant.append(mol)
-                    validity = validRxn(reactant, reaction)
-                    if validity:
-                        writer.write(mol)
+    with open(argument[2],"r") as RxnFile:
+        for line in RxnFile:
+            line = line.split("\t")
+            reaction = AllChem.ReactionFromSmarts(line[1])
+            for mol in molList:
+                reactant = []
+                reactant.append(mol)
+                validity = validRxn(reactant, reaction)
+                if validity:
+                    print(line[0] + " is valid for " + Chem.MolToSmiles(mol))
