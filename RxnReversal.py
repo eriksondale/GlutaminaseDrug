@@ -22,28 +22,29 @@ def validRxn(reactant, reaction):
             #print('Product length is 0: ' + Chem.MolToSmiles(reactant[0]) + ' ' + reactionPlan)
             return False
 
+        return True
         #Check that forward and reversal are same
-        compound = Chem.MolToSmiles(reactant[0])
-        reverseReactionPlan = reactionPlan[reactionPlan.find('>>')+2:] + '>>' + reactionPlan[0:reactionPlan.find('>>')]
-        reverseReaction = AllChem.ReactionFromSmarts(reverseReactionPlan)
+        #compound = Chem.MolToSmiles(reactant[0])
+        #reverseReactionPlan = reactionPlan[reactionPlan.find('>>')+2:] + '>>' + reactionPlan[0:reactionPlan.find('>>')]
+        #reverseReaction = AllChem.ReactionFromSmarts(reverseReactionPlan)
 
-        for prod in product:
-            try:
-                reactant = reverseReaction.RunReactants(prod)
-                for pairs in reactant:
-                    for molecule in pairs:
-                        moleculeBit = FingerprintMols.FingerprintMol(molecule)
-                        compoundBit= FingerprintMols.FingerprintMol(mol)
-                        similarity = DataStructs.FingerprintSimilarity(moleculeBit, compoundBit)
+        #for prod in product:
+            #try:
+                #reactant = reverseReaction.RunReactants(prod)
+                #for pairs in reactant:
+                    #for molecule in pairs:
+                        #moleculeBit = FingerprintMols.FingerprintMol(molecule)
+                        #compoundBit= FingerprintMols.FingerprintMol(mol)
+                        #similarity = DataStructs.FingerprintSimilarity(moleculeBit, compoundBit)
                         #print(similarity)
-                        if (similarity == 1): # Rxn is valid b/c product and reverse product is found to be same
-                            return True
+                        #if (similarity == 1): # Rxn is valid b/c product and reverse product is found to be same
+                        #    return True
 
-            except:
-                pass
+            #except:
+            #    pass
 
         #print("Failure to return same molecule: " + Chem.MolToSmiles(reactant[0]) + " " + reactionPlan)
-        return False
+        #return False
     except:
         #print('Overall error')
         return False
