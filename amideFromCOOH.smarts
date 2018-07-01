@@ -1,0 +1,1 @@
+Synthesis_of_amides_from_carboxylic_acids.smarts	[#7:5]-[#6:1](-[#1,#6:7])=[O:2]>>[H:4][#8:3]-[#6:1](-[#1,#6:7])=[O:2].[#7:5][H:6]
