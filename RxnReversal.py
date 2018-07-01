@@ -21,8 +21,16 @@ def validRxn(reactant, reaction):
         if(len(product) == 0):
             #print('Product length is 0: ' + Chem.MolToSmiles(reactant[0]) + ' ' + reactionPlan)
             return False
+        else:
+            for prods in product:
+                for prod in prods:
+                    try:
+                        Chem.SanitizeMol(prod)
+                        return True
+                    except:
+                        pass
+            return False
 
-        return True
         #Check that forward and reversal are same
         #compound = Chem.MolToSmiles(reactant[0])
         #reverseReactionPlan = reactionPlan[reactionPlan.find('>>')+2:] + '>>' + reactionPlan[0:reactionPlan.find('>>')]
@@ -32,16 +40,15 @@ def validRxn(reactant, reaction):
             #try:
                 #reactant = reverseReaction.RunReactants(prod)
                 #for pairs in reactant:
-                    #for molecule in pairs:
-                        #moleculeBit = FingerprintMols.FingerprintMol(molecule)
-                        #compoundBit= FingerprintMols.FingerprintMol(mol)
-                        #similarity = DataStructs.FingerprintSimilarity(moleculeBit, compoundBit)
-                        #print(similarity)
-                        #if (similarity == 1): # Rxn is valid b/c product and reverse product is found to be same
-                        #    return True
-
-            #except:
-            #    pass
+                #    for molecule in pairs:
+                #        moleculeBit = FingerprintMols.FingerprintMol(molecule)
+                #        compoundBit= FingerprintMols.FingerprintMol(mol)
+                #        similarity = DataStructs.FingerprintSimilarity(moleculeBit, compoundBit)
+            #            print(similarity)
+        #                if (similarity == 1): # Rxn is valid b/c product and reverse product is found to be same
+                            #return True
+        #    except:
+        #        pass
 
         #print("Failure to return same molecule: " + Chem.MolToSmiles(reactant[0]) + " " + reactionPlan)
         #return False
@@ -69,9 +76,9 @@ else:
         print('Need .sdf or .smi or .pdb file to read')
         sys.exit()
     with open(argument[2],"r") as RxnFile:
-        numInvalid = 0
-        numValid = 0
         for line in RxnFile:
+            numInvalid = 0
+            numValid = 0
             line = line.split("\t")
             reaction = AllChem.ReactionFromSmarts(line[1])
             for mol in molList:
@@ -79,9 +86,8 @@ else:
                 reactant.append(mol)
                 validity = validRxn(reactant, reaction)
                 if validity:
-                    print(Chem.MolToSmiles(mol))
-                   # numValid += 1
+                    numValid += 1
                 else:
-		    pass               # numInvalid += 1
-#print("Valid Rxns: " + str(numValid))
-#print("Invalid Rxns: " + str(numInvalid))
+		            numInvalid += 1
+            if(numValid > 0):
+                print(line[0] + " valid rxns: " + str(numValid))
