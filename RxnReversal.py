@@ -14,47 +14,48 @@ from rdkit.Chem.Fingerprints import FingerprintMols
 from rdkit import rdBase
 
 
+
 def validRxn(reactant, reaction):
-    try:
-        product = None
-        product = reaction.RunReactants(reactant)
-        if(len(product) == 0):
-            #print('Product length is 0: ' + Chem.MolToSmiles(reactant[0]) + ' ' + reactionPlan)
-            return False
-        else:
-            for prods in product:
-                for prod in prods:
-                    try:
-                        Chem.SanitizeMol(prod)
-                        return True
-                    except:
-                        pass
-            return False
+	try:
+		product = None
+		product = reaction.RunReactants(reactant)
+		if(len(product) == 0):
+            print('Product length is 0: ' + Chem.MolToSmiles(reactant[0]) + ' ' + reactionPlan)
+			return False
+		else:
+            #for prods in product:
+              #  for prod in prods:
+               #     try:
+                #        Chem.SanitizeMol(prod)
+                 #       return True
+                 #   except:
+                  #      pass
+           # return False
 
         #Check that forward and reversal are same
         #compound = Chem.MolToSmiles(reactant[0])
-        #reverseReactionPlan = reactionPlan[reactionPlan.find('>>')+2:] + '>>' + reactionPlan[0:reactionPlan.find('>>')]
-        #reverseReaction = AllChem.ReactionFromSmarts(reverseReactionPlan)
+		    reverseReactionPlan = reactionPlan[reactionPlan.find('>>')+2:] + '>>' + reactionPlan[0:reactionPlan.find('>>')]
+		    reverseReaction = AllChem.ReactionFromSmarts(reverseReactionPlan)
 
-        #for prod in product:
-            #try:
-                #reactant = reverseReaction.RunReactants(prod)
-                #for pairs in reactant:
-                #    for molecule in pairs:
-                #        moleculeBit = FingerprintMols.FingerprintMol(molecule)
-                #        compoundBit= FingerprintMols.FingerprintMol(mol)
-                #        similarity = DataStructs.FingerprintSimilarity(moleculeBit, compoundBit)
-            #            print(similarity)
-        #                if (similarity == 1): # Rxn is valid b/c product and reverse product is found to be same
-                            #return True
-        #    except:
-        #        pass
+		    for prod in product:
+		        try:
+		            reactant = reverseReaction.RunReactants(prod)
+		            for pairs in reactant:
+		                for molecule in pairs:
+							moleculeBit = FingerprintMols.FingerprintMol(molecule)
+							compoundBit= FingerprintMols.FingerprintMol(mol)
+							similarity = DataStructs.FingerprintSimilarity(moleculeBit, compoundBit)
+							print(similarity) 							
+							if(similarity == 1): # Rxn is valid b/c product and reverse product is found to be same
+								return True
+		        except:
+		             pass
 
-        #print("Failure to return same molecule: " + Chem.MolToSmiles(reactant[0]) + " " + reactionPlan)
-        #return False
-    except:
-        #print('Overall error')
-        return False
+		    print("Failure to return same molecule: " + Chem.MolToSmiles(reactant[0]) + " " + reactionPlan)
+		    return False
+	except:
+		print('Overall error')
+		return False
 
 
 
@@ -86,8 +87,10 @@ else:
                 reactant.append(mol)
                 validity = validRxn(reactant, reaction)
                 if validity:
-                    numValid += 1
+					numValid += 1
+					print(Chem.MolToSmiles(mol))
                 else:
 		            numInvalid += 1
-            if(numValid > 0):
-                print(line[0] + " valid rxns: " + str(numValid))
+            if(numValid == 0):
+				print(line[0] + " valid rxns: " + str(numValid))
+				print(line[0] + " invalid rxns: " + str(numInvalid)) 
