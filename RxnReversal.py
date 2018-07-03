@@ -16,81 +16,80 @@ from rdkit import rdBase
 
 
 def validRxn(reactant, reaction):
-	try:
+	#try:
 		product = None
 		product = reaction.RunReactants(reactant)
 		if(len(product) == 0):
-            print('Product length is 0: ' + Chem.MolToSmiles(reactant[0]) + ' ' + reactionPlan)
+			print('Product length is 0: ' + Chem.MolToSmiles(reactant[0]) + ' ' + reactionPlan)
 			return False
 		else:
-            #for prods in product:
-              #  for prod in prods:
-               #     try:
-                #        Chem.SanitizeMol(prod)
-                 #       return True
-                 #   except:
-                  #      pass
-           # return False
+			for prods in product:
+				for prod in prods:
+					try:
+						Chem.SanitizeMol(prod)
+					#	return True
+					except:
+						pass
+	#	return False
 
         #Check that forward and reversal are same
         #compound = Chem.MolToSmiles(reactant[0])
-		    reverseReactionPlan = reactionPlan[reactionPlan.find('>>')+2:] + '>>' + reactionPlan[0:reactionPlan.find('>>')]
-		    reverseReaction = AllChem.ReactionFromSmarts(reverseReactionPlan)
+			reverseReactionPlan = reactionPlan[reactionPlan.find('>>')+2:] + '>>' + reactionPlan[0:reactionPlan.find('>>')]
+			reverseReaction = AllChem.ReactionFromSmarts(reverseReactionPlan)
 
-		    for prod in product:
-		        try:
-		            reactant = reverseReaction.RunReactants(prod)
-		            for pairs in reactant:
-		                for molecule in pairs:
+			for prod in product:
+				try:
+					reactant = reverseReaction.RunReactants(prod)
+					for pairs in reactant:
+						for molecule in pairs:
 							moleculeBit = FingerprintMols.FingerprintMol(molecule)
 							compoundBit= FingerprintMols.FingerprintMol(mol)
 							similarity = DataStructs.FingerprintSimilarity(moleculeBit, compoundBit)
-							print(similarity) 							
+							#print(similarity)
 							if(similarity == 1): # Rxn is valid b/c product and reverse product is found to be same
 								return True
-		        except:
-		             pass
+				except:
+					pass
 
-		    print("Failure to return same molecule: " + Chem.MolToSmiles(reactant[0]) + " " + reactionPlan)
-		    return False
-	except:
-		print('Overall error')
-		return False
-
+		  #  print("Failure to return same molecule: " + Chem.MolToSmiles(reactant[0]) + " " + reactionPlan)
+		  	return False
+	#except:
+		#print('Overall error')
+	# 	return False
 
 
 if(len(argument) != 3):
-    print("Error in argument length; molecule and rxn files needed....")
+	print("Error in argument length; molecule and rxn files needed....")
 else:
-    if(argument[1].endswith('.sdf')):
-        suppl = Chem.SDMolSupplier(argument[1])
-        molList = [x for x in suppl if x is not None]
-    elif(argument[1].endswith('.smi')):
-        molList = []
-        with open(argument[1],'r') as File:
-            for line in File:
-                molList.append(Chem.MolFromSmiles(line))
-    elif(argument[1].endswith('.pdb')):
-        molList = []
-        molList.append(Chem.MolFromPDBFile(argument[1]))
-    else:
-        print('Need .sdf or .smi or .pdb file to read')
-        sys.exit()
-    with open(argument[2],"r") as RxnFile:
-        for line in RxnFile:
-            numInvalid = 0
-            numValid = 0
-            line = line.split("\t")
-            reaction = AllChem.ReactionFromSmarts(line[1])
-            for mol in molList:
-                reactant = []
-                reactant.append(mol)
-                validity = validRxn(reactant, reaction)
-                if validity:
+	if(argument[1].endswith('.sdf')):
+		suppl = Chem.SDMolSupplier(argument[1])
+		molList = [x for x in suppl if x is not None]
+	elif(argument[1].endswith('.smi')):
+		molList = []
+		with open(argument[1],'r') as File:
+			for line in File:
+				molList.append(Chem.MolFromSmiles(line))
+	elif(argument[1].endswith('.pdb')):
+		molList = []
+		molList.append(Chem.MolFromPDBFile(argument[1]))
+	else:
+		print('Need .sdf or .smi or .pdb file to read')
+		sys.exit()
+	with open(argument[2],"r") as RxnFile:
+		for line in RxnFile:
+			numInvalid = 0
+			numValid = 0
+			line = line.split("\t")
+			reactionPlan = line[1]
+			reaction = AllChem.ReactionFromSmarts(reactionPlan)
+			for mol in molList:
+				reactant = []
+				reactant.append(mol)
+				validity = validRxn(reactant, reaction)
+				if validity:
 					numValid += 1
 					print(Chem.MolToSmiles(mol))
-                else:
-		            numInvalid += 1
-            if(numValid == 0):
-				print(line[0] + " valid rxns: " + str(numValid))
-				print(line[0] + " invalid rxns: " + str(numInvalid)) 
+				else:
+					numInvalid += 1
+			print(line[0] + " valid rxns: " + str(numValid))
+			print(line[0] + " invalid rxns: " + str(numInvalid))
