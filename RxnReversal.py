@@ -16,20 +16,20 @@ from rdkit import rdBase
 
 
 def validRxn(reactant, reaction):
-	#try:
+	try:
 		product = None
 		product = reaction.RunReactants(reactant)
 		if(len(product) == 0):
-			print('Product length is 0: ' + Chem.MolToSmiles(reactant[0]) + ' ' + reactionPlan)
+			#print('Product length is 0: ' + Chem.MolToSmiles(reactant[0]) + ' ' + reactionPlan)
 			return False
 		else:
-			for prods in product:
-				for prod in prods:
-					try:
-						Chem.SanitizeMol(prod)
+			#for prods in product:
+				#for prod in prods:
+					#try:
+						#Chem.SanitizeMol(prod)
 					#	return True
-					except:
-						pass
+					#except:
+						#pass
 	#	return False
 
         #Check that forward and reversal are same
@@ -51,11 +51,11 @@ def validRxn(reactant, reaction):
 				except:
 					pass
 
-		  #  print("Failure to return same molecule: " + Chem.MolToSmiles(reactant[0]) + " " + reactionPlan)
+		   	#print("Failure to return same molecule: " + Chem.MolToSmiles(reactant[0]) + " " + reactionPlan)
 		  	return False
-	#except:
+	except:
 		#print('Overall error')
-	# 	return False
+		return False
 
 
 if(len(argument) != 3):
@@ -66,8 +66,10 @@ else:
 		molList = [x for x in suppl if x is not None]
 	elif(argument[1].endswith('.smi')):
 		molList = []
-		with open(argument[1],'r') as File:
-			for line in File:
+		tempFile = open(argument[1],"r")
+		for line in tempFile:
+			line = line.strip("\n")
+			if line is not None:
 				molList.append(Chem.MolFromSmiles(line))
 	elif(argument[1].endswith('.pdb')):
 		molList = []
@@ -85,11 +87,14 @@ else:
 			for mol in molList:
 				reactant = []
 				reactant.append(mol)
-				validity = validRxn(reactant, reaction)
-				if validity:
-					numValid += 1
-					print(Chem.MolToSmiles(mol))
+				if mol is None:
+					pass
 				else:
-					numInvalid += 1
+					validity = validRxn(reactant, reaction)
+					if validity:
+						numValid += 1
+						print(Chem.MolToSmiles(mol))
+					else:
+						numInvalid += 1
 			print(line[0] + " valid rxns: " + str(numValid))
 			print(line[0] + " invalid rxns: " + str(numInvalid))
