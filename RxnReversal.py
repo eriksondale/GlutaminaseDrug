@@ -23,13 +23,6 @@ def validRxn(reactant, reaction):
 			#print('Product length is 0: ' + Chem.MolToSmiles(reactant[0]) + ' ' + reactionPlan)
 			return False
 		else:
-			#for prods in product:
-				#for prod in prods:
-					#try:
-						#Chem.SanitizeMol(prod)
-					#	return True
-					#except:
-						#pass
 	#	return False
 
         #Check that forward and reversal are same
@@ -37,9 +30,11 @@ def validRxn(reactant, reaction):
 			reverseReactionPlan = reactionPlan[reactionPlan.find('>>')+2:] + '>>' + reactionPlan[0:reactionPlan.find('>>')]
 			reverseReaction = AllChem.ReactionFromSmarts(reverseReactionPlan)
 
-			for prod in product:
+			for prods in product:
 				try:
-					reactant = reverseReaction.RunReactants(prod)
+					for prod in prods:
+						Chem.SanitizeMol(prod)
+					reactant = reverseReaction.RunReactants(prods)
 					for pairs in reactant:
 						for molecule in pairs:
 							moleculeBit = FingerprintMols.FingerprintMol(molecule)
@@ -85,11 +80,12 @@ else:
 			reactionPlan = line[1]
 			reaction = AllChem.ReactionFromSmarts(reactionPlan)
 			for mol in molList:
-				reactant = []
-				reactant.append(mol)
 				if mol is None:
 					pass
 				else:
+					Chem.SanitizeMol(mol)
+					reactant = []
+					reactant.append(mol)
 					validity = validRxn(reactant, reaction)
 					if validity:
 						numValid += 1
